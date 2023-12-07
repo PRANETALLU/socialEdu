@@ -302,7 +302,7 @@ const Home = () => {
                             <Tab label="Following" value="1" />
 
 
-                            <Tab label="For You" value="2" sx={{ marginLeft: 8, marginRight: 8 }} />
+                            <Tab label="For You" value="2" sx={{ marginLeft: 8, marginRight: 4 }} />
 
                             {/*<Tab label="Community" value="3" />*/}
                         </TabList>
