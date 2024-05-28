@@ -25,7 +25,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Comment from './Comment';
 import Chip from '@mui/material/Chip';
 import TagsForPost from './TagsforPost';
+import { io } from 'socket.io-client';
 
+const socket = io('http://localhost:3001');
 
 const Post = (props) => {
     const { userInfo } = useContext(UserContext);
@@ -153,6 +155,22 @@ const Post = (props) => {
         }
     }
 
+    useEffect(() => {
+        // Listen for like update events from Socket.IO server
+        socket.on('likeUpdate', (postId, likeCount) => {
+            // Check if the updated like is for the current post
+            if (postId === postID) {
+                // Update like count in the state
+                setLikeCount(likeCount);
+            }
+        });
+    
+        // Clean up the event listener when component unmounts
+        return () => {
+            socket.off('likeUpdate');
+        };
+    }, [postID]);
+
     const getAuthorDetailsOfPost = async () => {
         const response = await fetch(`http://localhost:3001/user/${authorID}`, {
             method: 'GET',
@@ -257,9 +275,9 @@ const Post = (props) => {
                     <CardContent>
                         <Stack direction="row" justifyContent="space-between">
                             <Stack direction="row">
-                                <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold" }}>{user.name}</Typography>
+                                <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold" }}>{user?.name}</Typography>
                                 <Link to={`/otherProfilePage/${authorID}`}>
-                                    <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold", marginLeft: 1 }}>@{user.username}
+                                    <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold", marginLeft: 1 }}>@{user?.username}
                                     </Typography>
                                 </Link>
                                 {followingList && (!followingList.includes(authorID) && authorID !== userInfoId)

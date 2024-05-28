@@ -9,6 +9,8 @@ const User = require("./models/User.js");
 const Post = require("./models/Post.js");
 const Comment = require("./models/Comment.js");
 const Group = require("./models/Group.js");
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 
 mongoose.connect('mongodb+srv://pranetallu:2LJEQQ8JE7EISp0s@cluster0.fskrd0v.mongodb.net/');
 
@@ -37,6 +39,27 @@ db.on('error', (error) => {
 db.once('open', () => {
   console.log('MongoDB connection successful');
 });
+
+
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  socket.on('like', async (postId) => {
+    try {
+      // Your existing code for handling post likes...
+      // Emit the updated like count to all connected clients
+      io.emit('likeUpdate', postId, updatedLikeCount);
+    } catch (error) {
+      console.error('Error handling like event:', error);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
+
+
 
 app.post('/signup', async (req, res) => {
   const { name, username, password } = req.body;
@@ -296,6 +319,7 @@ app.post("/like/:id", async (req, res) => {
           await receivingUser.save(); // update receiving info 
           await userSpecific.save(); // update user info
           await postSpecific.save(); // update post information
+          //io.emit('likeUpdate', id, postSpecific.likes);
           res.status(201).json("User disliked the post");
           return;
         }
@@ -313,6 +337,7 @@ app.post("/like/:id", async (req, res) => {
         await userSpecific.save(); // update user info
         await postSpecific.save(); // update post information
 
+        //io.emit('likeUpdate', id, postSpecific.likes);
         res.status(201).json("Successfully liked the post");
       }
       catch (e) {
